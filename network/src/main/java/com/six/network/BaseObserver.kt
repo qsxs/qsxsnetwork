@@ -9,8 +9,11 @@ import io.reactivex.disposables.Disposable
  * 通用的Observer，T1原本接受的，T2 是经过 {#getSuccessData()}处理 {@link #onSuccess()}回调的
  */
 abstract class BaseObserver<T1, T2>
-@JvmOverloads constructor(private var context: Context, isShowLoading: Boolean = true, loadingMsg: CharSequence? = context.getString(R.string.loading))
-    : Observer<T1> {
+@JvmOverloads constructor(
+    private var context: Context,
+    isShowLoading: Boolean = true,
+    loadingMsg: CharSequence? = context.getString(R.string.loading)
+) : Observer<T1> {
 
     init {
         if (isShowLoading) {
@@ -22,12 +25,12 @@ abstract class BaseObserver<T1, T2>
     /**
      * 显示loading，重写实现自己的逻辑
      */
-    open fun showLoading(context: Context, loadingMsg: CharSequence?) {}
+    abstract fun showLoading(context: Context, loadingMsg: CharSequence?)
 
     /**
      * 隐藏loading，重写实现自己的逻辑
      */
-    open fun dismissLoading(context: Context) {}
+    abstract fun dismissLoading(context: Context)
 
     protected abstract fun getSuccessData(t: T1): T2?
 
