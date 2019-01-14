@@ -50,7 +50,7 @@ class RetrofitsManager private constructor() {
         ): T {
             var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
             if (iApi == null) {
-                var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits[baseUrl]
+                var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits["$baseUrl${clazz.simpleName}"]
                 if (retrofit == null) {
 
                     val builder = OkHttpClient.Builder()
@@ -79,7 +79,7 @@ class RetrofitsManager private constructor() {
                         .addConverterFactory(GsonConverterFactory.create())
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                         .build()
-                    SingletonHolder.INSTANCE.retrofits[baseUrl] = retrofit
+                    SingletonHolder.INSTANCE.retrofits["$baseUrl${clazz.simpleName}"] = retrofit
                 }
                 iApi = retrofit!!.create(clazz)
                 SingletonHolder.INSTANCE.serviceMap[clazz] = iApi!!
