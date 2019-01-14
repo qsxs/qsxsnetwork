@@ -39,15 +39,24 @@ class RetrofitsManager private constructor() {
         private const val DEFAULT_TIMEOUT = 20000L
 
         @JvmOverloads
-        fun <T> getApiService(baseUrl: String, clazz: Class<T>, interceptors: Array<Interceptor> = arrayOf(), certificates: Array<InputStream> = arrayOf()): T {
+        fun <T> getApiService(
+            baseUrl: String,
+            clazz: Class<T>,
+            interceptors: Array<Interceptor> = arrayOf(),
+            certificates: Array<InputStream> = arrayOf(),
+            connectTimeout: Long = DEFAULT_TIMEOUT,
+            writeTimeout: Long = DEFAULT_TIMEOUT,
+            readTimeout: Long = DEFAULT_TIMEOUT
+        ): T {
             var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
             if (iApi == null) {
                 var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits[baseUrl]
                 if (retrofit == null) {
 
                     val builder = OkHttpClient.Builder()
-                            .readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS)
-                            .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS)
+                        .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
+                        .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                        .writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
                     for (interceptor in interceptors) {
                         builder.addInterceptor(interceptor)
                     }
@@ -66,10 +75,10 @@ class RetrofitsManager private constructor() {
 //                    }
 
                     retrofit = Retrofit.Builder().baseUrl(baseUrl)
-                            .client(builder.build())
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                            .build()
+                        .client(builder.build())
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .build()
                     SingletonHolder.INSTANCE.retrofits[baseUrl] = retrofit
                 }
                 iApi = retrofit!!.create(clazz)
