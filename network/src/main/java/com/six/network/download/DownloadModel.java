@@ -1,10 +1,14 @@
 package com.six.network.download;
 
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+
 /**
  * Description: 下载实体类
  * Created by jia on 2017/11/30.
  * 人之所以能，是相信能
  */
+@Keep
 public class DownloadModel {
 
     private int progress;
@@ -36,6 +40,7 @@ public class DownloadModel {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "DownloadModel{" +
                 "progress=" + progress +

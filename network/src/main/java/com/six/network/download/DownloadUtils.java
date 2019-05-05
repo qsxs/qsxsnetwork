@@ -1,6 +1,6 @@
 package com.six.network.download;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.six.network.BaseSimpleObserver;
@@ -58,7 +58,7 @@ public class DownloadUtils {
         JsDownloadInterceptor mInterceptor = new JsDownloadInterceptor(listener);
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
-            public void log(String message) {
+            public void log(@NonNull String message) {
                 Log.i(TAG, message);
             }
         });
@@ -79,10 +79,6 @@ public class DownloadUtils {
 
     /**
      * 开始下载
-     *
-     * @param url
-     * @param filePath
-     * @param subscriber
      */
     public void download(@NonNull String url, final String filePath, BaseSimpleObserver<InputStream> subscriber) {
 
@@ -96,14 +92,14 @@ public class DownloadUtils {
 //                .unsubscribeOn(Schedulers.io())
                 .map(new Function<ResponseBody, InputStream>() {
                     @Override
-                    public InputStream apply(ResponseBody responseBody) throws Exception {
+                    public InputStream apply(ResponseBody responseBody) {
                         return responseBody.byteStream();
                     }
                 })
                 .observeOn(Schedulers.io()) // 用于计算任务
                 .doOnNext(new Consumer<InputStream>() {
                     @Override
-                    public void accept(InputStream inputStream) throws Exception {
+                    public void accept(InputStream inputStream) {
                         writeFile(inputStream, filePath);
                     }
                 })
@@ -114,9 +110,6 @@ public class DownloadUtils {
 
     /**
      * 将输入流写入文件
-     *
-     * @param inputString
-     * @param filePath
      */
     private void writeFile(InputStream inputString, String filePath) {
         Log.i(TAG, "writeFile: " + filePath);

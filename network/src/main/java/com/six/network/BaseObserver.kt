@@ -1,7 +1,7 @@
 package com.six.network
 
 import android.content.Context
-import android.support.annotation.CallSuper
+import androidx.annotation.CallSuper
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 
@@ -17,7 +17,7 @@ abstract class BaseObserver<T1, T2>
 
     init {
         if (isShowLoading) {
-            showLoading(context, loadingMsg)
+            this.showLoading(context, loadingMsg)
         }
     }
 

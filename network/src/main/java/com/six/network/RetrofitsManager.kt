@@ -1,5 +1,6 @@
 package com.six.network
 
+import android.annotation.SuppressLint
 import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -39,6 +40,7 @@ class RetrofitsManager private constructor() {
         private const val DEFAULT_TIMEOUT = 20000L
 
         @JvmOverloads
+        @JvmStatic
         fun <T> getApiService(
             baseUrl: String,
             clazz: Class<T>,
@@ -84,6 +86,7 @@ class RetrofitsManager private constructor() {
                 iApi = retrofit!!.create(clazz)
                 SingletonHolder.INSTANCE.serviceMap[clazz] = iApi!!
             }
+            @Suppress("UNCHECKED_CAST")
             return iApi as T
         }
 
