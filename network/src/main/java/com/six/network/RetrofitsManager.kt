@@ -1,6 +1,5 @@
 package com.six.network
 
-import android.annotation.SuppressLint
 import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
