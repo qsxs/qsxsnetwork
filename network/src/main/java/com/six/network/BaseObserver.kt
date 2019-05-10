@@ -52,9 +52,8 @@ abstract class BaseObserver<T1, T2>
     /**
      * 结束时回调，无论成功失败还是错误
      */
-    @CallSuper
-    protected open fun onEnd() {
-        dismissLoading(context)
+    protected open fun onEnd(success:Boolean) {
+
     }
 
     /**
@@ -62,7 +61,8 @@ abstract class BaseObserver<T1, T2>
      */
     @CallSuper
     override fun onError(e: Throwable) {
-        onEnd()
+        onEnd(false)
+        dismissLoading(context)
     }
 
     override fun onComplete() {
@@ -76,10 +76,13 @@ abstract class BaseObserver<T1, T2>
     final override fun onNext(t: T1) {
         if (isSuccess(t)) {
             onSuccess(getSuccessData(t))
+            onEnd(true)
         } else {
             onFail(t)
+            onEnd(false)
         }
-        onEnd()
+        dismissLoading(context)
+
     }
 
 
