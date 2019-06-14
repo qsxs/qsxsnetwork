@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * Created by jia on 2017/11/30.
  * 人之所以能，是相信能
  */
-public abstract class DownloadUtils {
+public class DownloadUtils {
 
     private static final String TAG = "DownloadUtils";
 
