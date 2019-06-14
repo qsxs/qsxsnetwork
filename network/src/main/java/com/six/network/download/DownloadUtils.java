@@ -1,17 +1,8 @@
 package com.six.network.download;
 
-import androidx.annotation.NonNull;
 import android.util.Log;
-
+import androidx.annotation.NonNull;
 import com.six.network.BaseSimpleObserver;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
-
 import io.reactivex.Observable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -25,35 +16,40 @@ import retrofit2.http.GET;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
+import java.io.*;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Description: 下载工具类
  * Created by jia on 2017/11/30.
  * 人之所以能，是相信能
  */
-public class DownloadUtils {
+public abstract class DownloadUtils {
 
     private static final String TAG = "DownloadUtils";
 
-    private static final int DEFAULT_TIMEOUT = 15;
+    private static final int DEFAULT_TIMEOUT = 15000;
 
     private Retrofit retrofit;
 
     private JsDownloadListener listener;
 
-    private String baseUrl;
-
     private String downloadUrl;
+    private long timeout = DEFAULT_TIMEOUT;
 
-    public interface DownloadService {
-        @Streaming
-        @GET
-        Observable<ResponseBody> download(@Url String url);
+    public DownloadUtils() {
+        this(DEFAULT_TIMEOUT, null);
     }
 
     public DownloadUtils(JsDownloadListener listener) {
+        this(DEFAULT_TIMEOUT, listener);
+    }
 
-        this.baseUrl = "http://www.baidu.com/";
+    public DownloadUtils(long timeout, JsDownloadListener listener) {
+
+        String baseUrl = "http://www.baidu.com/";
         this.listener = listener;
+        this.timeout = timeout;
 
         JsDownloadInterceptor mInterceptor = new JsDownloadInterceptor(listener);
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -67,7 +63,7 @@ public class DownloadUtils {
                 .addInterceptor(interceptor)
                 .addInterceptor(mInterceptor)
                 .retryOnConnectionFailure(true)
-                .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
 
         retrofit = new Retrofit.Builder()
@@ -81,8 +77,16 @@ public class DownloadUtils {
      * 开始下载
      */
     public void download(@NonNull String url, final String filePath, BaseSimpleObserver<InputStream> subscriber) {
+        download(url, filePath, subscriber, null);
+    }
 
-        listener.onStartDownload();
+    public void download(@NonNull String url, final String filePath, BaseSimpleObserver<InputStream> subscriber, JsDownloadListener listener) {
+        if (listener != null) {
+            this.listener = listener;
+        }
+        if (this.listener != null) {
+            this.listener.onStartDownload();
+        }
 
         // subscribeOn()改变调用它之前代码的线程
         // observeOn()改变调用它之后代码的线程
@@ -131,11 +135,11 @@ public class DownloadUtils {
             }
         } catch (FileNotFoundException e) {
             if (listener != null) {
-                listener.onFail("下载失败");
+                listener.onFail(getDownloadFailTip());
             }
         } catch (IOException e) {
             if (listener != null) {
-                listener.onFail("保存失败");
+                listener.onFail(getSaveFailTip());
             }
         } finally {
             try {
@@ -146,5 +150,15 @@ public class DownloadUtils {
             }
         }
 
+    }
+
+    abstract String getDownloadFailTip();
+
+    abstract String getSaveFailTip();
+
+    public interface DownloadService {
+        @Streaming
+        @GET
+        Observable<ResponseBody> download(@Url String url);
     }
 }
