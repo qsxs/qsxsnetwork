@@ -135,11 +135,11 @@ public abstract class DownloadUtils {
             }
         } catch (FileNotFoundException e) {
             if (listener != null) {
-                listener.onFail(getDownloadFailTip());
+                listener.onFail("download fail");
             }
         } catch (IOException e) {
             if (listener != null) {
-                listener.onFail(getSaveFailTip());
+                listener.onFail("save fail");
             }
         } finally {
             try {
@@ -151,10 +151,6 @@ public abstract class DownloadUtils {
         }
 
     }
-
-    abstract String getDownloadFailTip();
-
-    abstract String getSaveFailTip();
 
     public interface DownloadService {
         @Streaming
