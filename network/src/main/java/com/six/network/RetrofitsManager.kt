@@ -1,9 +1,11 @@
 package com.six.network
 
 import android.util.Log
+import com.six.network.config.RetrofitsConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -36,7 +38,22 @@ class RetrofitsManager private constructor() {
         /**
          * 网络请求超时时间毫秒
          */
-        private const val DEFAULT_TIMEOUT = 20000L
+        const val DEFAULT_TIMEOUT = 20000L
+
+        @JvmStatic
+        fun <T> getApiService(config: RetrofitsConfig<T>): T {
+            return getApiService(
+                config.baseUrl,
+                config.clazz,
+                config.interceptors,
+                config.certificates,
+                config.connectTimeout,
+                config.writeTimeout,
+                config.readTimeout,
+                config.factories,
+                config.tag
+            )
+        }
 
         @JvmOverloads
         @JvmStatic
@@ -47,11 +64,15 @@ class RetrofitsManager private constructor() {
             certificates: Array<InputStream> = arrayOf(),
             connectTimeout: Long = DEFAULT_TIMEOUT,
             writeTimeout: Long = DEFAULT_TIMEOUT,
-            readTimeout: Long = DEFAULT_TIMEOUT
+            readTimeout: Long = DEFAULT_TIMEOUT,
+            factories: Array<Converter.Factory> = arrayOf(GsonConverterFactory.create()),
+            tag: String = ""
         ): T {
             var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
             if (iApi == null) {
-                var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits["$baseUrl${clazz.simpleName}"]
+                val key = "$baseUrl${clazz.simpleName}$tag"
+                var retrofit: Retrofit? =
+                    SingletonHolder.INSTANCE.retrofits[key]
                 if (retrofit == null) {
 
                     val builder = OkHttpClient.Builder()
@@ -75,12 +96,15 @@ class RetrofitsManager private constructor() {
 //                        builder.sslSocketFactory(sslSocketFactory, trustManager)
 //                    }
 
-                    retrofit = Retrofit.Builder().baseUrl(baseUrl)
+                    val retrofitBuild = Retrofit.Builder().baseUrl(baseUrl)
                         .client(builder.build())
-                        .addConverterFactory(GsonConverterFactory.create())
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                        .build()
-                    SingletonHolder.INSTANCE.retrofits["$baseUrl${clazz.simpleName}"] = retrofit
+                    factories.forEach { factory ->
+                        retrofitBuild.addConverterFactory(factory)
+                    }
+
+                    retrofit = retrofitBuild.build()
+                    SingletonHolder.INSTANCE.retrofits[key] = retrofit
                 }
                 iApi = retrofit!!.create(clazz)
                 SingletonHolder.INSTANCE.serviceMap[clazz] = iApi!!
@@ -89,7 +113,10 @@ class RetrofitsManager private constructor() {
             return iApi as T
         }
 
-        private fun addCertificates(builder: OkHttpClient.Builder, certificates: Array<InputStream>) {
+        private fun addCertificates(
+            builder: OkHttpClient.Builder,
+            certificates: Array<InputStream>
+        ) {
             for (certificate in certificates) {
                 var trustManager: X509TrustManager
                 var sslSocketFactory: SSLSocketFactory
@@ -107,12 +134,17 @@ class RetrofitsManager private constructor() {
                         keyStore.setCertificateEntry(certificateAlias, cc)
                     }
 
-                    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                    val trustManagerFactory =
+                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
                     trustManagerFactory.init(keyStore)
 
                     val trustManagers = trustManagerFactory.trustManagers
                     if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
-                        throw IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers))
+                        throw IllegalStateException(
+                            "Unexpected default trust managers:" + Arrays.toString(
+                                trustManagers
+                            )
+                        )
                     }
                     trustManager = trustManagers[0] as X509TrustManager
 
