@@ -1,9 +1,9 @@
 package com.six.network
 
-import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.CallAdapter
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,11 +42,39 @@ class RetrofitsManager private constructor() {
         fun <T> getApiService(
             baseUrl: String,
             clazz: Class<T>,
+            client: OkHttpClient,
+            converterFactory: Converter.Factory = GsonConverterFactory.create(),
+            callAdapterFactory: CallAdapter.Factory = RxJava2CallAdapterFactory.create()
+        ): T {
+            var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
+            if (iApi == null) {
+                var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits[baseUrl]
+                if (retrofit == null) {
+                    retrofit = Retrofit.Builder().baseUrl(baseUrl)
+                        .client(client)
+                        .addConverterFactory(converterFactory)
+                        .addCallAdapterFactory(callAdapterFactory)
+                        .build()
+                    SingletonHolder.INSTANCE.retrofits[baseUrl] = retrofit
+                }
+                iApi = retrofit!!.create(clazz)
+                SingletonHolder.INSTANCE.serviceMap[clazz] = iApi!!
+            }
+            return iApi as T
+        }
+
+
+        @JvmOverloads
+        fun <T> getApiService(
+            baseUrl: String,
+            clazz: Class<T>,
             interceptors: Array<Interceptor> = arrayOf(),
             certificates: Array<InputStream> = arrayOf(),
             connectTimeout: Long = DEFAULT_TIMEOUT,
             writeTimeout: Long = DEFAULT_TIMEOUT,
-            readTimeout: Long = DEFAULT_TIMEOUT
+            readTimeout: Long = DEFAULT_TIMEOUT,
+            converterFactory: Converter.Factory = GsonConverterFactory.create(),
+            callAdapterFactory: CallAdapter.Factory = RxJava2CallAdapterFactory.create()
         ): T {
             var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
             if (iApi == null) {
@@ -60,12 +88,12 @@ class RetrofitsManager private constructor() {
                     for (interceptor in interceptors) {
                         builder.addInterceptor(interceptor)
                     }
-                    //打印日志
-                    val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
-                        Log.i(RetrofitsManager::class.java.simpleName, it)
-                    })
-                    interceptor.level = HttpLoggingInterceptor.Level.BODY
-                    builder.addInterceptor(interceptor)
+//                    //打印日志
+//                    val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
+//                        Log.i(RetrofitsManager::class.java.simpleName, it)
+//                    })
+//                    interceptor.level = HttpLoggingInterceptor.Level.BODY
+//                    builder.addInterceptor(interceptor)
 
                     //证书绑定
                     addCertificates(builder, certificates)
@@ -76,8 +104,8 @@ class RetrofitsManager private constructor() {
 
                     retrofit = Retrofit.Builder().baseUrl(baseUrl)
                         .client(builder.build())
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .addConverterFactory(converterFactory)
+                        .addCallAdapterFactory(callAdapterFactory)
                         .build()
                     SingletonHolder.INSTANCE.retrofits[baseUrl] = retrofit
                 }
@@ -87,7 +115,10 @@ class RetrofitsManager private constructor() {
             return iApi as T
         }
 
-        private fun addCertificates(builder: OkHttpClient.Builder, certificates: Array<InputStream>) {
+        private fun addCertificates(
+            builder: OkHttpClient.Builder,
+            certificates: Array<InputStream>
+        ) {
             for (certificate in certificates) {
                 var trustManager: X509TrustManager
                 var sslSocketFactory: SSLSocketFactory
@@ -105,12 +136,17 @@ class RetrofitsManager private constructor() {
                         keyStore.setCertificateEntry(certificateAlias, cc)
                     }
 
-                    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                    val trustManagerFactory =
+                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
                     trustManagerFactory.init(keyStore)
 
                     val trustManagers = trustManagerFactory.trustManagers
                     if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
-                        throw IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers))
+                        throw IllegalStateException(
+                            "Unexpected default trust managers:" + Arrays.toString(
+                                trustManagers
+                            )
+                        )
                     }
                     trustManager = trustManagers[0] as X509TrustManager
 
