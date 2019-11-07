@@ -1,6 +1,7 @@
 package com.six.network.config
 
 import com.six.network.RetrofitsManager.Companion.DEFAULT_TIMEOUT
+import okhttp3.CertificatePinner
 import okhttp3.Interceptor
 import retrofit2.Converter
 import retrofit2.converter.gson.GsonConverterFactory
@@ -8,6 +9,8 @@ import java.io.InputStream
 
 class RetrofitsConfig<T>(val baseUrl: String, val clazz: Class<T>) {
     var interceptors: Array<Interceptor> = arrayOf()
+        private set
+    var certificatePinner: CertificatePinner? = null
         private set
     var certificates: Array<InputStream> = arrayOf()
         private set
@@ -21,6 +24,11 @@ class RetrofitsConfig<T>(val baseUrl: String, val clazz: Class<T>) {
         private set
     var tag: String = ""
         private set
+
+    fun setCertificatePinner(pinner: CertificatePinner): RetrofitsConfig<T> {
+        this.certificatePinner = pinner
+        return this
+    }
 
     fun setTag(tag: String): RetrofitsConfig<T> {
         this.tag = tag

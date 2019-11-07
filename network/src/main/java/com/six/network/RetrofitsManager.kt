@@ -1,10 +1,10 @@
 package com.six.network
 
-import android.util.Log
 import com.six.network.config.RetrofitsConfig
+import okhttp3.CertificatePinner
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -40,12 +40,40 @@ class RetrofitsManager private constructor() {
          */
         const val DEFAULT_TIMEOUT = 20000L
 
+        @JvmOverloads
+        fun <T> getApiService(
+            baseUrl: String,
+            clazz: Class<T>,
+            client: OkHttpClient,
+            converterFactory: Converter.Factory = GsonConverterFactory.create(),
+            callAdapterFactory: CallAdapter.Factory = RxJava2CallAdapterFactory.create(),
+            tag: String = ""
+        ): T {
+            var iApi: Any? = SingletonHolder.INSTANCE.serviceMap[clazz]
+            if (iApi == null) {
+                val key = "$baseUrl${clazz.simpleName}$tag"
+                var retrofit: Retrofit? = SingletonHolder.INSTANCE.retrofits[key]
+                if (retrofit == null) {
+                    retrofit = Retrofit.Builder().baseUrl(baseUrl)
+                        .client(client)
+                        .addConverterFactory(converterFactory)
+                        .addCallAdapterFactory(callAdapterFactory)
+                        .build()
+                    SingletonHolder.INSTANCE.retrofits[key] = retrofit
+                }
+                iApi = retrofit!!.create(clazz)
+                SingletonHolder.INSTANCE.serviceMap[clazz] = iApi!!
+            }
+            return iApi as T
+        }
+
         @JvmStatic
         fun <T> getApiService(config: RetrofitsConfig<T>): T {
             return getApiService(
                 config.baseUrl,
                 config.clazz,
                 config.interceptors,
+                config.certificatePinner,
                 config.certificates,
                 config.connectTimeout,
                 config.writeTimeout,
@@ -61,6 +89,7 @@ class RetrofitsManager private constructor() {
             baseUrl: String,
             clazz: Class<T>,
             interceptors: Array<Interceptor> = arrayOf(),
+            certificatePinner: CertificatePinner? = null,
             certificates: Array<InputStream> = arrayOf(),
             connectTimeout: Long = DEFAULT_TIMEOUT,
             writeTimeout: Long = DEFAULT_TIMEOUT,
@@ -79,15 +108,18 @@ class RetrofitsManager private constructor() {
                         .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
                         .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
                         .writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
+                    if (certificatePinner != null) {
+                        builder.certificatePinner(certificatePinner)
+                    }
                     for (interceptor in interceptors) {
                         builder.addInterceptor(interceptor)
                     }
-                    //打印日志
-                    val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
-                        Log.i(RetrofitsManager::class.java.simpleName, it)
-                    })
-                    interceptor.level = HttpLoggingInterceptor.Level.BODY
-                    builder.addInterceptor(interceptor)
+//                    //打印日志
+//                    val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
+//                        Log.i(RetrofitsManager::class.java.simpleName, it)
+//                    })
+//                    interceptor.level = HttpLoggingInterceptor.Level.BODY
+//                    builder.addInterceptor(interceptor)
 
                     //证书绑定
                     addCertificates(builder, certificates)
