@@ -8,7 +8,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.InputStream
 
 class RetrofitsConfig<T>(val baseUrl: String, val clazz: Class<T>) {
-    var interceptors: Array<Interceptor> = arrayOf()
+    var interceptors: Array<out Interceptor> = arrayOf()
+        private set
+    var networkInterceptors: Array<out Interceptor> = arrayOf()
         private set
     var certificatePinner: CertificatePinner? = null
         private set
@@ -35,8 +37,24 @@ class RetrofitsConfig<T>(val baseUrl: String, val clazz: Class<T>) {
         return this
     }
 
+    fun setInterceptorsArg(vararg interceptor: Interceptor): RetrofitsConfig<T> {
+        this.interceptors = interceptor
+        return this
+    }
+
+    //
+    fun setNetworkInterceptorsArg(vararg interceptor: Interceptor): RetrofitsConfig<T> {
+        this.networkInterceptors = interceptor
+        return this
+    }
+
     fun setInterceptors(interceptor: Array<Interceptor>): RetrofitsConfig<T> {
         this.interceptors = interceptor
+        return this
+    }
+
+    fun setNetworkInterceptors(interceptor: Array<Interceptor>): RetrofitsConfig<T> {
+        this.networkInterceptors = interceptor
         return this
     }
 

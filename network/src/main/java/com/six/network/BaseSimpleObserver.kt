@@ -1,10 +1,14 @@
 package com.six.network
 
 import android.content.Context
+import java.lang.ref.WeakReference
 
 abstract class BaseSimpleObserver<T>
-@JvmOverloads constructor(context: Context, isShowLoading: Boolean = true, loadingMsg: CharSequence? = context.getString(R.string.loading))
-    : BaseObserver<T, T>(context, isShowLoading, loadingMsg) {
+@JvmOverloads constructor(
+    context: WeakReference<Context>?,
+    isShowLoading: Boolean = true,
+    loadingMsg: CharSequence? = null
+) : BaseObserver<T, T>(context, isShowLoading, loadingMsg) {
 
     final override fun getSuccessData(t: T): T {
         return t

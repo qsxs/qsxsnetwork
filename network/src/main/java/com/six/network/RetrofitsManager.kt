@@ -73,6 +73,7 @@ class RetrofitsManager private constructor() {
                 config.baseUrl,
                 config.clazz,
                 config.interceptors,
+                config.networkInterceptors,
                 config.certificatePinner,
                 config.certificates,
                 config.connectTimeout,
@@ -88,7 +89,8 @@ class RetrofitsManager private constructor() {
         fun <T> getApiService(
             baseUrl: String,
             clazz: Class<T>,
-            interceptors: Array<Interceptor> = arrayOf(),
+            interceptors: Array<out Interceptor> = arrayOf(),
+            networkInterceptors: Array<out Interceptor> = arrayOf(),
             certificatePinner: CertificatePinner? = null,
             certificates: Array<InputStream> = arrayOf(),
             connectTimeout: Long = DEFAULT_TIMEOUT,
@@ -113,6 +115,9 @@ class RetrofitsManager private constructor() {
                     }
                     for (interceptor in interceptors) {
                         builder.addInterceptor(interceptor)
+                    }
+                    for (interceptor in networkInterceptors) {
+                        builder.addNetworkInterceptor(interceptor)
                     }
 //                    //打印日志
 //                    val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {

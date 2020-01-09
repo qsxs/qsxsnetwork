@@ -11,12 +11,17 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 1
+        versionCode 10
         versionName "1.0"
 
         consumerProguardFiles 'proguard-rules.pro'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+    }
+
+    libraryVariants.all {
+        //不生成BuildConfig
+        it.generateBuildConfigProvider.configure { enabled = false }
     }
 
     buildTypes {
@@ -45,7 +50,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.3'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'com.squareup.retrofit2:retrofit:2.6.1'
     implementation 'com.squareup.retrofit2:converter-scalars:2.2.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'

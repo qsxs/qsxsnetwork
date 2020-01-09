@@ -4,15 +4,16 @@ import android.content.Context
 import androidx.annotation.CallSuper
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import java.lang.ref.WeakReference
 
 /**
  * 通用的Observer，T1原本接受的，T2 是经过 {#getSuccessData()}处理 {@link #onSuccess()}回调的
  */
 abstract class BaseObserver<T1, T2>
 @JvmOverloads constructor(
-    private var context: Context,
+    protected var context: WeakReference<Context>?,
     isShowLoading: Boolean = true,
-    loadingMsg: CharSequence? = context.getString(R.string.loading)
+    loadingMsg: CharSequence? = null
 ) : Observer<T1> {
 
     init {
@@ -25,12 +26,12 @@ abstract class BaseObserver<T1, T2>
     /**
      * 显示loading，重写实现自己的逻辑
      */
-    abstract fun showLoading(context: Context, loadingMsg: CharSequence?)
+    abstract fun showLoading(context: WeakReference<Context>?, loadingMsg: CharSequence?)
 
     /**
      * 隐藏loading，重写实现自己的逻辑
      */
-    abstract fun dismissLoading(context: Context)
+    abstract fun dismissLoading(context: WeakReference<Context>?)
 
     protected abstract fun getSuccessData(t: T1): T2?
 
