@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fail_request">请求失败</string>
+    <string name="unknown_exception">未知错误</string>
+    <string name="error_response">解析服务器数据错误</string>
+    <string name="server_exception">服务器异常</string>
+    <string name="empty_response">服务器响应为空</string>
+    <string name="connection_timed_out">连接超时，请稍后再试</string>
+    <string name="network_connection_fail">网络连接失败，请稍后再试</string>
+</resources>

@@ -1,65 +1,54 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
 
 android {
-    compileSdkVersion 28
-
-
+    compileSdk 31
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 10
-        versionName "1.0"
+        minSdk 21
+        targetSdk 31
 
-        consumerProguardFiles 'proguard-rules.pro'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+        consumerProguardFiles "consumer-rules.pro"
     }
-
     libraryVariants.all {
         //不生成BuildConfig
         it.generateBuildConfigProvider.configure { enabled = false }
     }
-
     buildTypes {
         release {
             minifyEnabled false
-            shrinkResources false//去除无用资源
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    allprojects {
-        repositories {
-            mavenCentral()
-            maven {
-                url "https://jitpack.io"
-            }
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    namespace 'com.lihb.network'
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-//    implementation project(':baseblock')
-//    implementation 'com.github.qsxs:baseblock:0.8'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
-    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
-    implementation 'com.squareup.retrofit2:converter-scalars:2.2.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-//    implementation 'com.google.code.gson:gson:2.8.2'
-}
-repositories {
-    mavenCentral()
+//    implementation 'androidx.core:core-ktx:1.7.0'
+//    implementation 'androidx.appcompat:appcompat:1.3.0'
+//    implementation 'com.google.android.material:material:1.4.0'
+
+    api 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    api 'io.reactivex.rxjava3:rxjava:3.1.4'
+    def retrofit_version = '2.9.0'
+    api "com.squareup.retrofit2:retrofit:$retrofit_version"
+    api "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    api "com.squareup.retrofit2:adapter-rxjava3:$retrofit_version"
+    def okhttp_version = '4.9.3'
+    api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+    api 'com.uber.autodispose2:autodispose-androidx-lifecycle:2.1.1'
+//    testImplementation 'junit:junit:4.13.2'
+//    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }

@@ -1,6 +1,6 @@
-package com.six.network.config
+package com.lihb.network.config
 
-import com.six.network.RetrofitsManager.Companion.DEFAULT_TIMEOUT
+import com.lihb.network.RetrofitsManager.DEFAULT_TIMEOUT
 import okhttp3.CertificatePinner
 import okhttp3.Interceptor
 import retrofit2.Converter

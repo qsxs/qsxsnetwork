@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fail_request">Request failed</string>
+    <string name="unknown_exception">Unknown exception</string>
+    <string name="error_response">Error parsing server data</string>
+    <string name="server_exception">Server exception</string>
+    <string name="empty_response">Empty response</string>
+    <string name="connection_timed_out">Connection timed out</string>
+    <string name="network_connection_fail">Network connection failed</string>
+</resources>
