@@ -129,7 +129,20 @@ fun <T : Any> Single<T>.toggleThread(): Single<T> {
     return this.observeOnMain().subscribeOnIO()
 }
 
+@Deprecated(
+    "Deprecated! Because it has the same function name as [autodispose2.androidx.lifecycle.KotlinExtensionsKt.autoDispose] ",
+    replaceWith = ReplaceWith("toggleDispose"),
+    DeprecationLevel.ERROR
+)
 fun <T : Any> Single<T>.autoDispose(
+    owner: LifecycleOwner,
+    toggleThread: Boolean = true,
+    untilEvent: Lifecycle.Event = Lifecycle.Event.ON_DESTROY
+): SingleSubscribeProxy<T> {
+    return toggleDispose(owner, toggleThread, untilEvent)
+}
+
+fun <T : Any> Single<T>.toggleDispose(
     owner: LifecycleOwner,
     toggleThread: Boolean = true,
     untilEvent: Lifecycle.Event = Lifecycle.Event.ON_DESTROY
